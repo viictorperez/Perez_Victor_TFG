@@ -1,0 +1,5 @@
+Receptor,Tiempo de Recepción (s),Posición X (m),Posición Y (m)
+Receptor 1,0.123,0,0
+Receptor 2,0.115,10,0
+Receptor 3,0.128,0,10
+Receptor 4,0.121,10,10
