@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Mapa en Tiempo Real</title>
+  <title>Mapa GPS en Tiempo Real</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body {
@@ -22,49 +22,62 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  // Cambiá esta URL por la de tu backend real en Render
   const URL_DATOS = 'https://backend-tfg-qzd9.onrender.com/data.json';
 
-  const map = L.map('map').setView([-34.6037, -58.3816], 13); // Punto base
+  const map = L.map('map').setView([-34.6037, -58.3816], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
   let marcadores = [];
+  let polyline = null;
 
   async function cargarPuntos() {
     try {
       const res = await fetch(URL_DATOS);
       const datos = await res.json();
 
-      // Limpiar marcadores anteriores
+      // Limpiar marcadores y línea previos
       marcadores.forEach(m => map.removeLayer(m));
       marcadores = [];
+      if (polyline) map.removeLayer(polyline);
 
-      // Dibujar nuevos puntos
-      datos.forEach(punto => {
+      const coordenadas = [];
+
+      datos.forEach((punto, i) => {
         const { latitud, longitud, timestamp } = punto;
-        const marcador = L.marker([latitud, longitud])
+        coordenadas.push([latitud, longitud]);
+
+        // Usar ícono especial para el último punto
+        const esUltimo = i === datos.length - 1;
+        const icono = esUltimo
+          ? L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] })
+          : undefined;
+
+        const marcador = L.marker([latitud, longitud], { icon: icono })
           .addTo(map)
           .bindPopup(`🕒 ${timestamp}`);
+
         marcadores.push(marcador);
       });
 
-      // Centrar en el último punto
-      if (datos.length > 0) {
-        const ultimo = datos[datos.length - 1];
-        map.setView([ultimo.latitud, ultimo.longitud], 14);
+      // Dibujar línea entre puntos
+      if (coordenadas.length > 1) {
+        polyline = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
       }
 
-      console.log(`Puntos cargados: ${datos.length}`);
+      // Centrar en el último punto
+      if (coordenadas.length > 0) {
+        map.setView(coordenadas[coordenadas.length - 1], 15);
+      }
 
+      console.log(`✅ ${datos.length} puntos cargados`);
     } catch (error) {
-      console.error("Error al cargar los datos:", error);
+      console.error("❌ Error al cargar los datos:", error);
     }
   }
 
-  // Cargar puntos al iniciar y cada 30 segundos
   cargarPuntos();
   setInterval(cargarPuntos, 30000);
 </script>
