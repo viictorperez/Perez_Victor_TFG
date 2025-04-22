@@ -17,11 +17,11 @@ CORS(app, origins=["https://viictorperez.github.io"])
 ARCHIVO_CSV = 'coordenadas.csv'
 
 def inicializar_csv():
-    if not os.path.exists(ARCHIVO_CSV):
+    if not os.path.exists(ARCHIVO_CSV) or os.stat(ARCHIVO_CSV).st_size == 0:
         with open(ARCHIVO_CSV, 'w', newline='') as archivo:
             writer = csv.writer(archivo)
             writer.writerow(['timestamp', 'latitud', 'longitud'])
-        logging.info("✅ coordenadas.csv creado")
+        logging.info("✅ Encabezado CSV creado correctamente")
 
 def generar_datos():
     while True:
