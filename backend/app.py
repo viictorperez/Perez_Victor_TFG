@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 import threading
 import time
 import random
@@ -8,7 +9,11 @@ import os
 
 app = Flask(__name__)
 
+# 🔒 Solo permitir solicitudes desde tu GitHub Pages
+CORS(app, origins=["https://viictorperez.github.io"])
+
 ARCHIVO_CSV = 'coordenadas.csv'
+
 
 # Crear CSV con encabezado si no existe
 def inicializar_csv():
