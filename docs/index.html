@@ -60,9 +60,11 @@
           ? L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] })
           : undefined;
 
-        const marcador = L.marker([latitud, longitud], { icon: icono })
+        const opciones = icono ? { icon: icono } : {};
+        const marcador = L.marker([latitud, longitud], opciones)
           .addTo(map)
           .bindPopup(`🕒 ${timestamp}`);
+
 
         marcadores.push(marcador);
       });
