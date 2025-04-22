@@ -36,6 +36,12 @@
   async function cargarPuntos() {
     try {
       const res = await fetch(URL_DATOS);
+      const contentType = res.headers.get("content-type");
+
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("La respuesta no es JSON válida");
+      }
+
       const datos = await res.json();
 
       // Limpiar marcadores y línea previos
@@ -49,7 +55,6 @@
         const { latitud, longitud, timestamp } = punto;
         coordenadas.push([latitud, longitud]);
 
-        // Usar ícono especial para el último punto
         const esUltimo = i === datos.length - 1;
         const icono = esUltimo
           ? L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] })
@@ -62,19 +67,17 @@
         marcadores.push(marcador);
       });
 
-      // Dibujar línea entre puntos
       if (coordenadas.length > 1) {
         polyline = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
       }
 
-      // Centrar en el último punto
       if (coordenadas.length > 0) {
         map.setView(coordenadas[coordenadas.length - 1], 15);
       }
 
       console.log(`✅ ${datos.length} puntos cargados`);
     } catch (error) {
-      console.error("❌ Error al cargar los datos:", error);
+      console.error("❌ Error al cargar los datos:", error.message);
     }
   }
 
