@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mapa en Tiempo Real</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // URL del backend en Render (ajustá esto con tu link real)
+  const URL_DATOS = 'https://backend-tfg-qzd9.onrender.com';
+
+  // Inicializar mapa (por defecto en Buenos Aires)
+  const map = L.map('map').setView([-34.6037, -58.3816], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+  }).addTo(map);
+
+  let marcadores = [];
+
+  async function cargarDatos() {
+    try {
+      const res = await fetch(URL_DATOS);
+      const datos = await res.json();
+
+      // Quitar marcadores anteriores
+      marcadores.forEach(m => map.removeLayer(m));
+      marcadores = [];
+
+      // Agregar nuevos
+      datos.forEach(punto => {
+        const marcador = L.marker([punto.latitud, punto.longitud])
+          .addTo(map)
+          .bindPopup(`🕒 ${punto.timestamp}`);
+        marcadores.push(marcador);
+      });
+
+      // Centrar mapa en el último punto
+      if (datos.length > 0) {
+        const ultimo = datos[datos.length - 1];
+        map.setView([ultimo.latitud, ultimo.longitud], 14);
+      }
+
+    } catch (err) {
+      console.error("Error cargando datos:", err);
+    }
+  }
+
+  // Primer carga y luego cada 30 segundos
+  cargarDatos();
+  setInterval(cargarDatos, 30000);
+</script>
+
+</body>
+</html>
