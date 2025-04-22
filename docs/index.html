@@ -22,49 +22,51 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  // URL del backend en Render (ajustá esto con tu link real)
-  const URL_DATOS = 'https://backend-tfg-qzd9.onrender.com';
+  // Cambiá esta URL por la de tu backend real en Render
+  const URL_DATOS = 'https://tu-backend.onrender.com/data.json';
 
-  // Inicializar mapa (por defecto en Buenos Aires)
-  const map = L.map('map').setView([-34.6037, -58.3816], 13);
+  const map = L.map('map').setView([-34.6037, -58.3816], 13); // Punto base
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
   let marcadores = [];
 
-  async function cargarDatos() {
+  async function cargarPuntos() {
     try {
       const res = await fetch(URL_DATOS);
       const datos = await res.json();
 
-      // Quitar marcadores anteriores
+      // Limpiar marcadores anteriores
       marcadores.forEach(m => map.removeLayer(m));
       marcadores = [];
 
-      // Agregar nuevos
+      // Dibujar nuevos puntos
       datos.forEach(punto => {
-        const marcador = L.marker([punto.latitud, punto.longitud])
+        const { latitud, longitud, timestamp } = punto;
+        const marcador = L.marker([latitud, longitud])
           .addTo(map)
-          .bindPopup(`🕒 ${punto.timestamp}`);
+          .bindPopup(`🕒 ${timestamp}`);
         marcadores.push(marcador);
       });
 
-      // Centrar mapa en el último punto
+      // Centrar en el último punto
       if (datos.length > 0) {
         const ultimo = datos[datos.length - 1];
         map.setView([ultimo.latitud, ultimo.longitud], 14);
       }
 
-    } catch (err) {
-      console.error("Error cargando datos:", err);
+      console.log(`Puntos cargados: ${datos.length}`);
+
+    } catch (error) {
+      console.error("Error al cargar los datos:", error);
     }
   }
 
-  // Primer carga y luego cada 30 segundos
-  cargarDatos();
-  setInterval(cargarDatos, 30000);
+  // Cargar puntos al iniciar y cada 30 segundos
+  cargarPuntos();
+  setInterval(cargarPuntos, 30000);
 </script>
 
 </body>
