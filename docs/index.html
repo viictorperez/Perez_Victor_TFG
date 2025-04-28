@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Mapa en Tiempo Real</title>
+  <title>Mapa GPS en Tiempo Real</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body {
@@ -22,49 +22,69 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  // URL del backend en Render (ajustá esto con tu link real)
-  const URL_DATOS = 'https://backend-tfg-qzd9.onrender.com';
+  const URL_DATOS = 'https://backend-tfg-qzd9.onrender.com/data.json';
 
-  // Inicializar mapa (por defecto en Buenos Aires)
   const map = L.map('map').setView([-34.6037, -58.3816], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
+    attribution: '© OpenStreetMap contributors'
   }).addTo(map);
 
   let marcadores = [];
+  let polyline = null;
 
-  async function cargarDatos() {
+  async function cargarPuntos() {
     try {
       const res = await fetch(URL_DATOS);
+      const contentType = res.headers.get("content-type");
+
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("La respuesta no es JSON válida");
+      }
+
       const datos = await res.json();
 
-      // Quitar marcadores anteriores
+      // Limpiar marcadores y línea previos
       marcadores.forEach(m => map.removeLayer(m));
       marcadores = [];
+      if (polyline) map.removeLayer(polyline);
 
-      // Agregar nuevos
-      datos.forEach(punto => {
-        const marcador = L.marker([punto.latitud, punto.longitud])
+      const coordenadas = [];
+
+      datos.forEach((punto, i) => {
+        const { latitud, longitud, timestamp } = punto;
+        coordenadas.push([latitud, longitud]);
+
+        const esUltimo = i === datos.length - 1;
+        const icono = esUltimo
+          ? L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] })
+          : undefined;
+
+        const opciones = icono ? { icon: icono } : {};
+        const marcador = L.marker([latitud, longitud], opciones)
           .addTo(map)
-          .bindPopup(`🕒 ${punto.timestamp}`);
+          .bindPopup(`🕒 ${timestamp}`);
+
+
         marcadores.push(marcador);
       });
 
-      // Centrar mapa en el último punto
-      if (datos.length > 0) {
-        const ultimo = datos[datos.length - 1];
-        map.setView([ultimo.latitud, ultimo.longitud], 14);
+      if (coordenadas.length > 1) {
+        polyline = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
       }
 
-    } catch (err) {
-      console.error("Error cargando datos:", err);
+      if (coordenadas.length > 0) {
+        map.setView(coordenadas[coordenadas.length - 1], 15);
+      }
+
+      console.log(`✅ ${datos.length} puntos cargados`);
+    } catch (error) {
+      console.error("❌ Error al cargar los datos:", error.message);
     }
   }
 
-  // Primer carga y luego cada 30 segundos
-  cargarDatos();
-  setInterval(cargarDatos, 30000);
+  cargarPuntos();
+  setInterval(cargarPuntos, 30000);
 </script>
 
 </body>
