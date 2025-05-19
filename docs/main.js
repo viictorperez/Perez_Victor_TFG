@@ -9,6 +9,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 let polyline = L.polyline([], { color: 'blue' }).addTo(map);
 let points = []; // Guardar el historial de puntos
 let circle = null;
+let lastTimestamp = null;
 
 async function fetchLatestLocation() {
   try {
@@ -18,6 +19,9 @@ async function fetchLatestLocation() {
     const lat = data.latitude;
     const lon = data.longitude;
     const time = data.timestamp;
+
+    if (time === lastTimestamp) return; // Mismo timestamp, ignorar
+    lastTimestamp = time;
 
     if (!isNaN(lat) && !isNaN(lon)) {
       document.getElementById('timestamp').textContent = new Date(time).toLocaleString();
@@ -44,6 +48,7 @@ function clearTrack() {
     circle = null;
   }
   document.getElementById('timestamp').textContent = '---';
+  lastTimestamp = null;
 }
 
 function downloadCSV() {
