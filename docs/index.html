@@ -2,90 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Mapa GPS en Tiempo Real</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TTN GPS Tracker</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    html, body {
+    html, body, #map {
+      height: 100%;
       margin: 0;
       padding: 0;
-      height: 100%;
-    }
-    #map {
-      height: 100vh;
-      width: 100vw;
     }
   </style>
 </head>
 <body>
+  <div id="map"></div>
 
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  const URL_DATOS = 'https://backend-tfg-qzd9.onrender.com/data.json';
-
-  const map = L.map('map').setView([-34.6037, -58.3816], 13);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
-
-  let marcadores = [];
-  let polyline = null;
-
-  async function cargarPuntos() {
-    try {
-      const res = await fetch(URL_DATOS);
-      const contentType = res.headers.get("content-type");
-
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("La respuesta no es JSON válida");
-      }
-
-      const datos = await res.json();
-
-      // Limpiar marcadores y línea previos
-      marcadores.forEach(m => map.removeLayer(m));
-      marcadores = [];
-      if (polyline) map.removeLayer(polyline);
-
-      const coordenadas = [];
-
-      datos.forEach((punto, i) => {
-        const { latitud, longitud, timestamp } = punto;
-        coordenadas.push([latitud, longitud]);
-
-        const esUltimo = i === datos.length - 1;
-        const icono = esUltimo
-          ? L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32] })
-          : undefined;
-
-        const opciones = icono ? { icon: icono } : {};
-        const marcador = L.marker([latitud, longitud], opciones)
-          .addTo(map)
-          .bindPopup(`🕒 ${timestamp}`);
-
-
-        marcadores.push(marcador);
-      });
-
-      if (coordenadas.length > 1) {
-        polyline = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
-      }
-
-      if (coordenadas.length > 0) {
-        map.setView(coordenadas[coordenadas.length - 1], 15);
-      }
-
-      console.log(`✅ ${datos.length} puntos cargados`);
-    } catch (error) {
-      console.error("❌ Error al cargar los datos:", error.message);
-    }
-  }
-
-  cargarPuntos();
-  setInterval(cargarPuntos, 30000);
-</script>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
