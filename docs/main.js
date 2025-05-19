@@ -9,7 +9,7 @@ const marker = L.marker([0, 0]).addTo(map);
 
 async function fetchLatestLocation() {
   try {
-    const response = await fetch('https://YOUR-RENDER-URL.onrender.com/data');
+    const response = await fetch('https://backend-tfg-qzd9.onrender.com');
     const data = await response.json();
 
     const last = data[data.length - 1];
