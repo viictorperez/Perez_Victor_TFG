@@ -1,41 +1,32 @@
-// server.js
-const express = require('express');
-const fetch = require('node-fetch');
-const cors = require('cors');
+from flask import Flask, jsonify
+import os
+import requests
+from flask_cors import CORS
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const TTN_API_KEY = process.env.TTN_API_KEY;
-const TTN_APP_ID = 'mkrgpslora'; // Cambia esto si tu app TTN tiene otro nombre
+app = Flask(__name__)
+CORS(app)
 
-app.use(cors());
+TTN_API_KEY = os.getenv("TTN_API_KEY")
+TTN_APP_ID = "mkrgpslora"  # cambia si tu app se llama diferente
 
-app.get('/data', async (req, res) => {
-  const url = `https://eu1.cloud.thethings.network/api/v3/as/applications/${TTN_APP_ID}/packages/storage/uplink_message`;
-
-  try {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${TTN_API_KEY}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`TTN API error: ${response.status}`);
+@app.route("/data")
+def get_data():
+    url = f"https://eu1.cloud.thethings.network/api/v3/as/applications/{TTN_APP_ID}/packages/storage/uplink_message"
+    headers = {
+        "Authorization": f"Bearer {TTN_API_KEY}"
     }
 
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    console.error('Error al obtener datos de TTN:', err);
-    res.status(500).json({ error: 'No se pudo acceder a TTN' });
-  }
-});
+    try:
+        r = requests.get(url, headers=headers)
+        r.raise_for_status()
+        return jsonify(r.json())
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": "No se pudo obtener datos de TTN"}), 500
 
-app.get('/', (req, res) => {
-  res.send('Servidor TTN funcionando. Usa /data para obtener ubicación.');
-});
+@app.route("/")
+def home():
+    return "Servidor Flask funcionando. Ruta /data disponible."
 
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
-});
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 3000)))
