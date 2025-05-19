@@ -6,14 +6,47 @@
   <title>TTN GPS Tracker</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    html, body, #map {
-      height: 100%;
+    body, html {
       margin: 0;
       padding: 0;
+      font-family: sans-serif;
+    }
+    header {
+      background-color: white;
+      padding: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #info {
+      margin: 0.5rem 1rem;
+    }
+    #buttons {
+      margin: 0.5rem 1rem;
+    }
+    #map {
+      height: calc(100vh - 140px);
+    }
+    button {
+      margin-right: 10px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>TTN GPS Tracker</h1>
+  </header>
+
+  <div id="info">
+    <p><strong>Último dato recibido:</strong> <span id="timestamp">---</span></p>
+  </div>
+
+  <div id="buttons">
+    <button onclick="clearTrack()">🧹 Limpiar track</button>
+    <button onclick="downloadCSV()">💾 Guardar track</button>
+  </div>
+
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
