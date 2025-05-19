@@ -1,32 +1,48 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import os
-import requests
+import json
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-TTN_API_KEY = os.getenv("TTN_API_KEY")
-TTN_APP_ID = "mkrgpslora" 
+data_store = []  # Lista temporal para almacenar mensajes recibidos
+
+@app.route("/ttn", methods=["POST"])
+def receive_ttn_webhook():
+    try:
+        payload = request.get_json()
+        print("Mensaje recibido desde TTN:", json.dumps(payload, indent=2))
+
+        # Extraer campos clave del mensaje (ej. lat/lon/time si están presentes)
+        decoded = payload.get("uplink_message", {}).get("decoded_payload", {})
+        timestamp = payload.get("received_at")
+
+        entry = {
+            "timestamp": timestamp,
+            "latitude": decoded.get("latitude"),
+            "longitude": decoded.get("longitude")
+        }
+
+        data_store.append(entry)
+        if len(data_store) > 50:
+            data_store.pop(0)
+
+        return "OK", 200
+    except Exception as e:
+        print("Error al procesar webhook:", e)
+        return "Error", 400
 
 @app.route("/data")
-def get_data():
-    url = f"https://eu1.cloud.thethings.network/api/v3/as/applications/{TTN_APP_ID}/packages/storage/uplink_message"
-    headers = {
-        "Authorization": f"Bearer {TTN_API_KEY}"
-    }
+def get_latest_data():
+    if not data_store:
+        return jsonify({"error": "No hay datos disponibles"}), 404
 
-    try:
-        r = requests.get(url, headers=headers)
-        r.raise_for_status()
-        return jsonify(r.json())
-    except Exception as e:
-        print("Error:", e)
-        return jsonify({"error": "No se pudo obtener datos de TTN"}), 500
+    return jsonify(data_store[-1])
 
 @app.route("/")
 def home():
-    return "Servidor Flask funcionando. Ruta /data disponible."
+    return "Servidor Flask funcionando. Ruta /ttn para recibir, /data para leer."
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 3000)))
