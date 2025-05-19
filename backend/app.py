@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 TTN_API_KEY = os.getenv("TTN_API_KEY")
-TTN_APP_ID = "mkrgpslora"  # cambia si tu app se llama diferente
+TTN_APP_ID = "mkrgpslora" 
 
 @app.route("/data")
 def get_data():
