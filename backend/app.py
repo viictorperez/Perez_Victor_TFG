@@ -1,80 +1,41 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
-import threading
-import time
-import random
-from datetime import datetime
-import csv
-import os
-import logging
+// server.js
+const express = require('express');
+const fetch = require('node-fetch');
+const cors = require('cors');
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s - %(message)s')
+const app = express();
+const PORT = process.env.PORT || 3000;
+const TTN_API_KEY = process.env.TTN_API_KEY;
+const TTN_APP_ID = 'mkrgpslora'; // Cambia esto si tu app TTN tiene otro nombre
 
-app = Flask(__name__)
-CORS(app, origins=["https://viictorperez.github.io"])
+app.use(cors());
 
-ARCHIVO_CSV = 'coordenadas.csv'
+app.get('/data', async (req, res) => {
+  const url = `https://eu1.cloud.thethings.network/api/v3/as/applications/${TTN_APP_ID}/packages/storage/uplink_message`;
 
-def inicializar_csv():
-    if not os.path.exists(ARCHIVO_CSV) or os.stat(ARCHIVO_CSV).st_size == 0:
-        with open(ARCHIVO_CSV, 'w', newline='') as archivo:
-            writer = csv.writer(archivo)
-            writer.writerow(['timestamp', 'latitud', 'longitud'])
-        logging.info("✅ Encabezado CSV creado correctamente")
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${TTN_API_KEY}`,
+      },
+    });
 
-def generar_datos():
-    while True:
-        now = datetime.now().isoformat()
-        base_lat, base_lon = -34.6037, -58.3816
-        lat = base_lat + random.uniform(-0.01, 0.01)
-        lon = base_lon + random.uniform(-0.01, 0.01)
-        try:
-            with open(ARCHIVO_CSV, 'a', newline='') as archivo:
-                writer = csv.writer(archivo)
-                writer.writerow([now, lat, lon])
-            logging.info(f"🛰️ Punto generado: {lat}, {lon}")
-        except Exception as e:
-            logging.error(f"❌ Error escribiendo CSV: {e}")
-        time.sleep(30)
+    if (!response.ok) {
+      throw new Error(`TTN API error: ${response.status}`);
+    }
 
-@app.route('/')
-def home():
-    return "🛰️ Backend funcionando"
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    console.error('Error al obtener datos de TTN:', err);
+    res.status(500).json({ error: 'No se pudo acceder a TTN' });
+  }
+});
 
-@app.route('/data.json')
-def data_json():
-    datos = []
-    try:
-        with open(ARCHIVO_CSV, newline='') as archivo:
-            reader = csv.DictReader(archivo)
-            for fila in reader:
-                if 'timestamp' in fila:
-                    datos.append({
-                        'timestamp': fila['timestamp'],
-                        'latitud': float(fila['latitud']),
-                        'longitud': float(fila['longitud'])
-                    })
-        logging.info(f"📤 {len(datos)} puntos enviados a /data.json")
-    except Exception as e:
-        logging.error(f"❌ Error leyendo CSV: {e}")
-    return jsonify(datos)
+app.get('/', (req, res) => {
+  res.send('Servidor TTN funcionando. Usa /data para obtener ubicación.');
+});
 
-@app.route('/csv')
-def ver_csv_como_texto():
-    try:
-        with open(ARCHIVO_CSV, 'r') as archivo:
-            contenido = archivo.read()
-        return f"<pre>{contenido}</pre>"
-    except Exception as e:
-        logging.error(f"❌ Error al leer CSV para /csv: {e}")
-        return f"Error al leer CSV: {e}"
-
-if __name__ == '__main__':
-    inicializar_csv()
-
-    hilo = threading.Thread(target=generar_datos, daemon=True)
-    hilo.start()
-    logging.info("🚀 Generador de coordenadas iniciado")
-
-    app.run(host='0.0.0.0', port=10000)
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en puerto ${PORT}`);
+});
