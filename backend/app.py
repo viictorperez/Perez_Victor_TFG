@@ -16,10 +16,9 @@ def receive_ttn_webhook():
 
         # Extraer campos clave del mensaje (ej. lat/lon/time si están presentes)
         decoded = payload.get("uplink_message", {}).get("decoded_payload", {})
-        timestamp = payload.get("received_at")
 
         entry = {
-            "timestamp": timestamp,
+            "timestamp": decoded.get ("timestamp"),
             "latitude": decoded.get("latitude"),
             "longitude": decoded.get("longitude")
         }
