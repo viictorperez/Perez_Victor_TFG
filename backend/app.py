@@ -7,7 +7,7 @@ app = FastAPI()
 
 data_store = []
 
-@app.post("/ttn")
+@app.post("/ttn") 
 async def receive_ttn_webhook(request: Request):
     payload = await request.json()
     decoded = payload.get("uplink_message", {}).get("decoded_payload", {})
