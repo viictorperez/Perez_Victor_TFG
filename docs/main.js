@@ -1,15 +1,20 @@
-// main.js
-
-const map = L.map('map').setView([41.38, 2.17], 13);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-let polyline = L.polyline([], { color: 'blue' }).addTo(map);
-let points = []; // Guardar el historial de puntos
+let map = null;
+let marker = null;
+let polyline = null;
+let points = [];
 let circle = null;
 let lastTimestamp = null;
+
+function initMap() {
+  map = L.map('map').setView([41.38, 2.17], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  marker = L.marker([0, 0]).addTo(map);
+  polyline = L.polyline([], { color: 'blue' }).addTo(map);
+}
 
 async function fetchLatestLocation() {
   try {
@@ -20,21 +25,20 @@ async function fetchLatestLocation() {
     const lon = data.longitude;
     const time = data.timestamp;
 
-    if (time === lastTimestamp) return; // Mismo timestamp, ignorar
+    if (time === lastTimestamp) return;
     lastTimestamp = time;
 
-    if (!isNaN(lat) && !isNaN(lon)) {
-      document.getElementById('timestamp').textContent = new Date(time).toLocaleString();
+    document.getElementById('timestamp').textContent = new Date(time).toLocaleString();
 
-      const latlng = [lat, lon];
-      points.push({ timestamp: time, latitude: lat, longitude: lon });
+    const latlng = [lat, lon];
+    points.push({ timestamp: time, latitude: lat, longitude: lon });
 
-      if (circle) map.removeLayer(circle);
-      circle = L.circleMarker(latlng, { radius: 8, color: 'red' }).addTo(map);
+    if (circle) map.removeLayer(circle);
+    circle = L.circleMarker(latlng, { radius: 8, color: 'red' }).addTo(map);
 
-      polyline.addLatLng(latlng);
-      map.setView(latlng, 16);
-    }
+    polyline.addLatLng(latlng);
+    marker.setLatLng(latlng);
+    map.setView(latlng, 16);
   } catch (err) {
     console.error("Error al obtener datos del backend:", err);
   }
@@ -42,7 +46,7 @@ async function fetchLatestLocation() {
 
 function clearTrack() {
   points = [];
-  polyline.setLatLngs([]);
+  if (polyline) polyline.setLatLngs([]);
   if (circle) {
     map.removeLayer(circle);
     circle = null;
@@ -66,24 +70,33 @@ function downloadCSV() {
   URL.revokeObjectURL(url);
 }
 
-fetchLatestLocation();
-setInterval(fetchLatestLocation, 30000);
-
 function mostrarSeccion(id) {
-  const onlineSection = document.getElementById('online');
-  const offlineSection = document.getElementById('offline');
+  const online = document.getElementById('online');
+  const offline = document.getElementById('offline');
 
-  onlineSection.style.display = (id === 'online') ? 'block' : 'none';
-  offlineSection.style.display = (id === 'offline') ? 'block' : 'none';
+  online.style.display = (id === 'online') ? 'block' : 'none';
+  offline.style.display = (id === 'offline') ? 'block' : 'none';
 
-  // Si se muestra el mapa, recalcular tamaño para que se vea bien
   if (id === 'online') {
     setTimeout(() => {
-      map.invalidateSize();
-    }, 200); // espera breve para asegurar que el div es visible
+      if (!map) {
+        initMap();
+        fetchLatestLocation();
+        setInterval(fetchLatestLocation, 30000);
+      } else {
+        map.invalidateSize();
+      }
+    }, 100);
   }
 }
 
-// Hacer visible la función desde el HTML (importante)
+window.clearTrack = clearTrack;
+window.downloadCSV = downloadCSV;
 window.mostrarSeccion = mostrarSeccion;
 
+// Por si online es la sección inicial visible:
+window.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('online').style.display !== 'none') {
+    mostrarSeccion('online');
+  }
+});
