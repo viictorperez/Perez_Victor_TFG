@@ -68,3 +68,22 @@ function downloadCSV() {
 
 fetchLatestLocation();
 setInterval(fetchLatestLocation, 30000);
+
+function mostrarSeccion(id) {
+  const onlineSection = document.getElementById('online');
+  const offlineSection = document.getElementById('offline');
+
+  onlineSection.style.display = (id === 'online') ? 'block' : 'none';
+  offlineSection.style.display = (id === 'offline') ? 'block' : 'none';
+
+  // Si se muestra el mapa, recalcular tamaño para que se vea bien
+  if (id === 'online') {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 200); // espera breve para asegurar que el div es visible
+  }
+}
+
+// Hacer visible la función desde el HTML (importante)
+window.mostrarSeccion = mostrarSeccion;
+
