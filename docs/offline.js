@@ -23,6 +23,17 @@ function crearGrafico(datos) {
         }
     }).filter(p => p);
 
+    puntos.push({ x: 0, y: 0 }); // asegurar que 0,0 está incluido para centrado automático
+
+    const xs = puntos.map(p => p.x);
+    const ys = puntos.map(p => p.y);
+    const margen = 20;
+
+    const minX = Math.min(...xs, 0) - margen;
+    const maxX = Math.max(...xs, 0) + margen;
+    const minY = Math.min(...ys, 0) - margen;
+    const maxY = Math.max(...ys, 0) + margen;
+
     if (chart) chart.destroy();
 
     const ctx = document.getElementById('grafico').getContext('2d');
@@ -32,21 +43,36 @@ function crearGrafico(datos) {
             datasets: [
                 {
                     label: 'Emisores',
-                    data: puntos,
+                    data: puntos.filter(p => p.x !== 0 || p.y !== 0),
                     backgroundColor: 'rgba(0,123,255,0.7)'
                 },
                 {
-                    label: 'Receptor',
+                    label: 'Receptor (0,0)',
                     data: [{ x: 0, y: 0 }],
                     backgroundColor: 'rgba(255,0,0,0.9)',
-                    pointRadius: 8
+                    pointRadius: 7
                 }
             ]
         },
         options: {
+            animation: false,
             scales: {
-                x: { title: { display: true, text: 'Eje X' } },
-                y: { title: { display: true, text: 'Eje Y' } }
+                x: {
+                    min: minX,
+                    max: maxX,
+                    title: { display: true, text: 'X' }
+                },
+                y: {
+                    min: minY,
+                    max: maxY,
+                    title: { display: true, text: 'Y' }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { boxWidth: 12 }
+                }
             }
         }
     });
