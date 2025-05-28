@@ -1,4 +1,6 @@
 let chart;
+let datos = [];
+let indiceActual = 0;
 
 const PROFUNDIDAD_RECEPTOR = 100;
 
@@ -7,36 +9,50 @@ document.getElementById('csvFile').addEventListener('change', function(evt) {
     header: true,
     dynamicTyping: true,
     complete: function(resultados) {
-      procesarDatos(resultados.data);
+      datos = resultados.data.filter(f => f.id !== undefined); // ignora líneas vacías
+      indiceActual = 0;
+      mostrarFila(indiceActual);
     }
   });
 });
 
-function procesarDatos(data) {
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (indiceActual > 0) {
+    indiceActual--;
+    mostrarFila(indiceActual);
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (indiceActual < datos.length - 1) {
+    indiceActual++;
+    mostrarFila(indiceActual);
+  }
+});
+
+function mostrarFila(i) {
+  const fila = datos[i];
   const puntosExactos = [];
   const puntosDireccion = [];
   const puntosPresencia = [];
-
   let profundidades = [];
 
-  data.forEach(fila => {
-    const az = fila.azimut;
-    const el = fila.elevacion;
-    const r = fila.rango;
+  const az = fila.azimut;
+  const el = fila.elevacion;
+  const r = fila.rango;
 
-    if (isNumber(az) && isNumber(el) && isNumber(r)) {
-      const punto = calcularPosicionExacta(az, el, r);
-      puntosExactos.push(punto);
-      profundidades.push(punto.profundidad);
-    } else if (isNumber(az) && isNumber(el)) {
-      const punto = calcularDireccion(az, el);
-      puntosDireccion.push(punto);
-      profundidades.push(punto.profundidad);
-    } else if (isNumber(r)) {
-      const punto = calcularPresencia(r);
-      puntosPresencia.push(punto);
-    }
-  });
+  if (isNumber(az) && isNumber(el) && isNumber(r)) {
+    const punto = calcularPosicionExacta(az, el, r);
+    puntosExactos.push(punto);
+    profundidades.push(punto.profundidad);
+  } else if (isNumber(az) && isNumber(el)) {
+    const punto = calcularDireccion(az, el);
+    puntosDireccion.push(punto);
+    profundidades.push(punto.profundidad);
+  } else if (isNumber(r)) {
+    const punto = calcularPresencia(r);
+    puntosPresencia.push(punto);
+  }
 
   const minDepth = Math.min(...profundidades);
   const maxDepth = Math.max(...profundidades);
@@ -54,8 +70,7 @@ function procesarDatos(data) {
           pointBackgroundColor: puntosExactos.map(p =>
             getColorForDepth(p.profundidad, minDepth, maxDepth)
           ),
-          pointRadius: 6,
-          showLine: false
+          pointRadius: 6
         },
         {
           label: 'Dirección estimada',
@@ -89,7 +104,9 @@ function procesarDatos(data) {
     }
   });
 
-  // Actualizar leyenda de profundidad si hay
+  // Actualizar leyenda y estado
+  document.getElementById('infoFila').innerText = `Fila: ${i + 1} / ${datos.length}`;
+
   if (profundidades.length > 0) {
     document.getElementById('profundidad-min').innerText = minDepth.toFixed(1) + ' m';
     document.getElementById('profundidad-max').innerText = maxDepth.toFixed(1) + ' m';
