@@ -106,12 +106,12 @@ function mostrarFila(i) {
           max: RANGO_MAXIMO,
           title: { display: true, text: 'Y (m)' }
         }
-},
-
+      },
       plugins: {
         legend: { position: 'top' }
       }
     }
+
   });
 
   // Actualizar leyenda y estado
