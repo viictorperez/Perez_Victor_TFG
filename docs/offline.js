@@ -1,79 +1,135 @@
 let chart;
 
+const PROFUNDIDAD_RECEPTOR = 100;
+
 document.getElementById('csvFile').addEventListener('change', function(evt) {
-    Papa.parse(evt.target.files[0], {
-        header: true,
-        dynamicTyping: true,
-        complete: function(resultados) {
-            crearGrafico(resultados.data);
-        }
-    });
+  Papa.parse(evt.target.files[0], {
+    header: true,
+    dynamicTyping: true,
+    complete: function(resultados) {
+      procesarDatos(resultados.data);
+    }
+  });
 });
 
-function crearGrafico(datos) {
-    const puntos = datos.map(fila => {
-        if (fila.azimut !== undefined && fila.angulo !== undefined && fila.rango !== undefined) {
-            let anguloRad = fila.angulo * Math.PI / 180;
-            return {
-                x: fila.rango * Math.cos(anguloRad),
-                y: fila.rango * Math.sin(anguloRad)
-            };
-        } else if (fila.x !== undefined && fila.y !== undefined) {
-            return { x: fila.x, y: fila.y };
-        }
-    }).filter(p => p);
+function procesarDatos(data) {
+  const puntosExactos = [];
+  const puntosDireccion = [];
+  const puntosPresencia = [];
 
-    puntos.push({ x: 0, y: 0 }); // asegurar que 0,0 está incluido para centrado automático
+  let profundidades = [];
 
-    const xs = puntos.map(p => p.x);
-    const ys = puntos.map(p => p.y);
-    const margen = 20;
+  data.forEach(fila => {
+    const az = fila.azimut;
+    const el = fila.elevacion;
+    const r = fila.rango;
 
-    const minX = Math.min(...xs, 0) - margen;
-    const maxX = Math.max(...xs, 0) + margen;
-    const minY = Math.min(...ys, 0) - margen;
-    const maxY = Math.max(...ys, 0) + margen;
+    if (isNumber(az) && isNumber(el) && isNumber(r)) {
+      const punto = calcularPosicionExacta(az, el, r);
+      puntosExactos.push(punto);
+      profundidades.push(punto.profundidad);
+    } else if (isNumber(az) && isNumber(el)) {
+      const punto = calcularDireccion(az, el);
+      puntosDireccion.push(punto);
+      profundidades.push(punto.profundidad);
+    } else if (isNumber(r)) {
+      const punto = calcularPresencia(r);
+      puntosPresencia.push(punto);
+    }
+  });
 
-    if (chart) chart.destroy();
+  const minDepth = Math.min(...profundidades);
+  const maxDepth = Math.max(...profundidades);
 
-    const ctx = document.getElementById('grafico').getContext('2d');
-    chart = new Chart(ctx, {
-        type: 'scatter',
-        data: {
-            datasets: [
-                {
-                    label: 'Emisores',
-                    data: puntos.filter(p => p.x !== 0 || p.y !== 0),
-                    backgroundColor: 'rgba(0,123,255,0.7)'
-                },
-                {
-                    label: 'Receptor (0,0)',
-                    data: [{ x: 0, y: 0 }],
-                    backgroundColor: 'rgba(255,0,0,0.9)',
-                    pointRadius: 7
-                }
-            ]
+  if (chart) chart.destroy();
+
+  const ctx = document.getElementById('grafico').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Posición exacta',
+          data: puntosExactos.map(p => ({ x: p.x, y: p.y })),
+          pointBackgroundColor: puntosExactos.map(p =>
+            getColorForDepth(p.profundidad, minDepth, maxDepth)
+          ),
+          pointRadius: 6,
+          showLine: false
         },
-        options: {
-            animation: false,
-            scales: {
-                x: {
-                    min: minX,
-                    max: maxX,
-                    title: { display: true, text: 'X' }
-                },
-                y: {
-                    min: minY,
-                    max: maxY,
-                    title: { display: true, text: 'Y' }
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: { boxWidth: 12 }
-                }
-            }
+        {
+          label: 'Dirección estimada',
+          data: puntosDireccion.map(p => ({ x: p.x, y: p.y })),
+          backgroundColor: 'blue',
+          pointRadius: 5
+        },
+        {
+          label: 'Presencia (rango)',
+          data: puntosPresencia.map(p => ({ x: 0, y: 0 })),
+          backgroundColor: 'red',
+          pointRadius: puntosPresencia.map(p => p.rango / 5)
+        },
+        {
+          label: 'Receptor (0,0)',
+          data: [{ x: 0, y: 0 }],
+          backgroundColor: 'black',
+          pointRadius: 8
         }
-    });
+      ]
+    },
+    options: {
+      animation: false,
+      scales: {
+        x: { title: { display: true, text: 'X' } },
+        y: { title: { display: true, text: 'Y' } }
+      },
+      plugins: {
+        legend: { position: 'top' }
+      }
+    }
+  });
+
+  // Actualizar leyenda de profundidad si hay
+  if (profundidades.length > 0) {
+    document.getElementById('profundidad-min').innerText = minDepth.toFixed(1) + ' m';
+    document.getElementById('profundidad-max').innerText = maxDepth.toFixed(1) + ' m';
+  } else {
+    document.getElementById('profundidad-min').innerText = '-';
+    document.getElementById('profundidad-max').innerText = '-';
+  }
+}
+
+function calcularPosicionExacta(az, el, r) {
+  const azRad = az * Math.PI / 180;
+  const elRad = el * Math.PI / 180;
+  const x = r * Math.cos(elRad) * Math.sin(azRad);
+  const y = r * Math.cos(elRad) * Math.cos(azRad);
+  const z = r * Math.sin(elRad);
+  const profundidad = PROFUNDIDAD_RECEPTOR + z;
+  return { x, y, profundidad };
+}
+
+function calcularDireccion(az, el) {
+  const r = 100;
+  const azRad = az * Math.PI / 180;
+  const elRad = el * Math.PI / 180;
+  const x = r * Math.cos(elRad) * Math.sin(azRad);
+  const y = r * Math.cos(elRad) * Math.cos(azRad);
+  const z = r * Math.sin(elRad);
+  const profundidad = PROFUNDIDAD_RECEPTOR + z;
+  return { x, y, profundidad };
+}
+
+function calcularPresencia(r) {
+  return { rango: r };
+}
+
+function getColorForDepth(depth, min, max) {
+  const ratio = (depth - min) / (max - min);
+  const blue = Math.round(255 - ratio * 200);
+  return `rgb(0,0,${blue})`;
+}
+
+function isNumber(n) {
+  return typeof n === 'number' && !isNaN(n);
 }
