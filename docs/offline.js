@@ -3,6 +3,7 @@ let datos = [];
 let indiceActual = 0;
 
 const PROFUNDIDAD_RECEPTOR = 100;
+const RANGO_MAXIMO = 300; // metros (ajusta según el alcance de tu receptor)
 
 document.getElementById('csvFile').addEventListener('change', function(evt) {
   Papa.parse(evt.target.files[0], {
@@ -95,9 +96,18 @@ function mostrarFila(i) {
     options: {
       animation: false,
       scales: {
-        x: { title: { display: true, text: 'X' } },
-        y: { title: { display: true, text: 'Y' } }
-      },
+        x: {
+          min: -RANGO_MAXIMO,
+          max: RANGO_MAXIMO,
+          title: { display: true, text: 'X (m)' }
+        },
+        y: {
+          min: -RANGO_MAXIMO,
+          max: RANGO_MAXIMO,
+          title: { display: true, text: 'Y (m)' }
+        }
+}
+
       plugins: {
         legend: { position: 'top' }
       }
