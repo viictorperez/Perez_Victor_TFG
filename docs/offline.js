@@ -115,7 +115,7 @@ function mostrarFila(i) {
   });
 
   // Actualizar leyenda y estado
-  document.getElementById('infoFila').innerText = `Fila: ${i + 1} / ${datos.length}`;
+  document.getElementById('infoFila').innerText = `Hora: ${fila.timestamp || 'desconocida'}`;
 
   if (profundidades.length > 0) {
     document.getElementById('profundidad-min').innerText = minDepth.toFixed(1) + ' m';
