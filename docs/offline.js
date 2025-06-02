@@ -68,7 +68,7 @@ function mostrarFila(i) {
         {
           label: 'Posición exacta',
           data: puntosExactos.map(p => ({ x: p.x, y: p.y, profundidad: p.profundidad })),
-          backgroundColor: puntosExactos.map(p =>
+          pointBackgroundColor: puntosExactos.map(p =>
             getColorForDepth(p.profundidad, minDepth, maxDepth)
           ),
           pointRadius: 6
@@ -76,7 +76,7 @@ function mostrarFila(i) {
         {
           label: 'Dirección estimada',
           data: puntosDireccion.map(p => ({ x: p.x, y: p.y, profundidad: p.profundidad })),
-          backgroundColor: puntosDireccion.map(p =>
+          pointBackgroundColor: puntosDireccion.map(p =>
             getColorForDepth(p.profundidad, minDepth, maxDepth)
           ),
           pointRadius: 3,
