@@ -55,8 +55,8 @@ function mostrarFila(i) {
     puntosPresencia.push(punto);
   }
 
-  const minDepth = Math.min(...profundidades);
-  const maxDepth = Math.max(...profundidades);
+  const minDepth = PROFUNDIDAD_RECEPTOR - RANGO_MAXIMO;
+  const maxDepth = PROFUNDIDAD_RECEPTOR + RANGO_MAXIMO;
 
   if (chart) chart.destroy();
 
