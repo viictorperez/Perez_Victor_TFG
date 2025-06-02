@@ -67,15 +67,15 @@ function mostrarFila(i) {
       datasets: [
         {
           label: 'Posición exacta',
-          data: puntosExactos.map(p => ({ x: p.x, y: p.y })),
-          pointBackgroundColor: puntosExactos.map(p =>
+          data: puntosExactos.map(p => ({ x: p.x, y: p.y, profundidad: p.profundidad })),
+          backgroundColor: puntosExactos.map(p =>
             getColorForDepth(p.profundidad, minDepth, maxDepth)
           ),
           pointRadius: 6
         },
         {
           label: 'Dirección estimada',
-          data: puntosDireccion.map(p => ({ x: p.x, y: p.y })),
+          data: puntosDireccion.map(p => ({ x: p.x, y: p.y, profundidad: p.profundidad })),
           backgroundColor: puntosDireccion.map(p =>
             getColorForDepth(p.profundidad, minDepth, maxDepth)
           ),
@@ -94,29 +94,36 @@ function mostrarFila(i) {
           backgroundColor: 'black',
           pointRadius: 8
         }
-      ]
-    },
-    options: {
-      animation: false,
-      scales: {
-        x: {
-          min: -RANGO_MAXIMO,
-          max: RANGO_MAXIMO,
-          title: { display: true, text: 'X (m)' }
+      ],
+      options: {
+        animation: false,
+        scales: {
+          x: {
+            min: -RANGO_MAXIMO,
+            max: RANGO_MAXIMO,
+            title: { display: true, text: 'X (m)' }
+          },
+          y: {
+            min: -RANGO_MAXIMO,
+            max: RANGO_MAXIMO,
+            title: { display: true, text: 'Y (m)' }
+          }
         },
-        y: {
-          min: -RANGO_MAXIMO,
-          max: RANGO_MAXIMO,
-          title: { display: true, text: 'Y (m)' }
-        }
-      },
-      plugins: {
-        legend: {
-          position: 'right', 
-          labels: { boxWidth: 12 }
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const p = context.raw;
+                return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
+              }
+            }
+          },
+          legend: {
+            position: 'right',
+            labels: { boxWidth: 12 }
+          }
         }
       }
-    }
   });
 
   // Actualizar leyenda y estado
@@ -137,7 +144,7 @@ function calcularPosicionExacta(az, el, r) {
   const x = r * Math.cos(elRad) * Math.sin(azRad);
   const y = r * Math.cos(elRad) * Math.cos(azRad);
   const z = r * Math.sin(elRad);
-  const profundidad = PROFUNDIDAD_RECEPTOR - z;  // Corrección aquí
+  const profundidad = PROFUNDIDAD_RECEPTOR - z;  
   return { x, y, profundidad };
 }
 
@@ -151,7 +158,7 @@ function calcularDireccion(az, el, segmentos = 20) {
     const x = r * Math.cos(elRad) * Math.sin(azRad);
     const y = r * Math.cos(elRad) * Math.cos(azRad);
     const z = r * Math.sin(elRad);
-    const profundidad = PROFUNDIDAD_RECEPTOR - z;  // Corrección aquí
+    const profundidad = PROFUNDIDAD_RECEPTOR - z; 
     puntos.push({ x, y, profundidad });
   }
 
