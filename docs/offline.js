@@ -118,8 +118,8 @@ function mostrarFila(i) {
           position: 'right', 
           labels: { boxWidth: 12 }
         }
+      }
     }
-
   });
 
   // Actualizar leyenda y estado
