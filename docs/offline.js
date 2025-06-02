@@ -75,9 +75,15 @@ function mostrarFila(i) {
         },
         {
           label: 'Dirección estimada',
-          data: puntosDireccion.map(p => ({ x: p.x, y: p.y })),
-          backgroundColor: 'blue',
-          pointRadius: 5
+          data: puntosDireccion.flatMap(p => [
+            { x: p.x1, y: p.y1 },
+            { x: p.x2, y: p.y2 }
+          ]),
+          borderColor: 'blue',
+          borderWidth: 2,
+          showLine: true,
+          fill: false,
+          pointRadius: 0
         },
         {
           label: 'Presencia (rango)',
@@ -137,15 +143,22 @@ function calcularPosicionExacta(az, el, r) {
 }
 
 function calcularDireccion(az, el) {
-  const r = 100;
+  const r = RANGO_MAXIMO;
   const azRad = az * Math.PI / 180;
   const elRad = el * Math.PI / 180;
   const x = r * Math.cos(elRad) * Math.sin(azRad);
   const y = r * Math.cos(elRad) * Math.cos(azRad);
   const z = r * Math.sin(elRad);
   const profundidad = PROFUNDIDAD_RECEPTOR + z;
-  return { x, y, profundidad };
+  return {
+    x1: 0,
+    y1: 0,
+    x2: x,
+    y2: y,
+    profundidad
+  };
 }
+
 
 function calcularPresencia(r) {
   return { rango: r };
