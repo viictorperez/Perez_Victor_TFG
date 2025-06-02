@@ -114,8 +114,10 @@ function mostrarFila(i) {
         }
       },
       plugins: {
-        legend: { position: 'top' }
-      }
+        legend: {
+          position: 'right', 
+          labels: { boxWidth: 12 }
+        }
     }
 
   });
