@@ -3,7 +3,7 @@ let datos = [];
 let indiceActual = 0;
 
 const PROFUNDIDAD_RECEPTOR = 100;
-const RANGO_MAXIMO = 300; 
+const RANGO_MAXIMO = 50; 
 
 document.getElementById('csvFile').addEventListener('change', function(evt) {
   Papa.parse(evt.target.files[0], {
@@ -55,8 +55,8 @@ function mostrarFila(i) {
     puntosPresencia.push(punto);
   }
 
-  const minDepth = PROFUNDIDAD_RECEPTOR - RANGO_MAXIMO;
-  const maxDepth = PROFUNDIDAD_RECEPTOR + RANGO_MAXIMO;
+  const minDepth = PROFUNDIDAD_RECEPTOR + RANGO_MAXIMO;
+  const maxDepth = PROFUNDIDAD_RECEPTOR - RANGO_MAXIMO;
 
   if (chart) chart.destroy();
 
@@ -137,7 +137,7 @@ function calcularPosicionExacta(az, el, r) {
   const x = r * Math.cos(elRad) * Math.sin(azRad);
   const y = r * Math.cos(elRad) * Math.cos(azRad);
   const z = r * Math.sin(elRad);
-  const profundidad = PROFUNDIDAD_RECEPTOR + z;
+  const profundidad = PROFUNDIDAD_RECEPTOR - z;  // Corrección aquí
   return { x, y, profundidad };
 }
 
@@ -151,7 +151,7 @@ function calcularDireccion(az, el, segmentos = 20) {
     const x = r * Math.cos(elRad) * Math.sin(azRad);
     const y = r * Math.cos(elRad) * Math.cos(azRad);
     const z = r * Math.sin(elRad);
-    const profundidad = PROFUNDIDAD_RECEPTOR + z;
+    const profundidad = PROFUNDIDAD_RECEPTOR - z;  // Corrección aquí
     puntos.push({ x, y, profundidad });
   }
 
