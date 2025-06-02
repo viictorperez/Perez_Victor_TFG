@@ -96,7 +96,7 @@ function mostrarFila(i) {
         }
       ]
     },
-    options: {  // ✅ AQUÍ está bien ubicado
+    options: {  
       animation: false,
       scales: {
         x: {
