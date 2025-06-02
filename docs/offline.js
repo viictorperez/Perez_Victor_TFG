@@ -47,9 +47,9 @@ function mostrarFila(i) {
     puntosExactos.push(punto);
     profundidades.push(punto.profundidad);
   } else if (isNumber(az) && isNumber(el)) {
-    const punto = calcularDireccion(az, el);
-    puntosDireccion.push(punto);
-    profundidades.push(punto.profundidad);
+    const puntos = calcularDireccion(az, el);
+    puntosDireccion.push(...puntos);
+    profundidades.push(...puntos.map(p => p.profundidad));
   } else if (isNumber(r)) {
     const punto = calcularPresencia(r);
     puntosPresencia.push(punto);
@@ -75,15 +75,12 @@ function mostrarFila(i) {
         },
         {
           label: 'Dirección estimada',
-          data: puntosDireccion.flatMap(p => [
-            { x: p.x1, y: p.y1 },
-            { x: p.x2, y: p.y2 }
-          ]),
-          borderColor: 'blue',
-          borderWidth: 2,
-          showLine: true,
-          fill: false,
-          pointRadius: 0
+          data: puntosDireccion.map(p => ({ x: p.x, y: p.y })),
+          backgroundColor: puntosDireccion.map(p =>
+            getColorForDepth(p.profundidad, minDepth, maxDepth)
+          ),
+          pointRadius: 3,
+          showLine: false
         },
         {
           label: 'Presencia (rango)',
@@ -144,23 +141,22 @@ function calcularPosicionExacta(az, el, r) {
   return { x, y, profundidad };
 }
 
-function calcularDireccion(az, el) {
-  const r = RANGO_MAXIMO;
+function calcularDireccion(az, el, segmentos = 20) {
   const azRad = az * Math.PI / 180;
   const elRad = el * Math.PI / 180;
-  const x = r * Math.cos(elRad) * Math.sin(azRad);
-  const y = r * Math.cos(elRad) * Math.cos(azRad);
-  const z = r * Math.sin(elRad);
-  const profundidad = PROFUNDIDAD_RECEPTOR + z;
-  return {
-    x1: 0,
-    y1: 0,
-    x2: x,
-    y2: y,
-    profundidad
-  };
-}
+  const puntos = [];
 
+  for (let i = 1; i <= segmentos; i++) {
+    const r = (RANGO_MAXIMO * i) / segmentos;
+    const x = r * Math.cos(elRad) * Math.sin(azRad);
+    const y = r * Math.cos(elRad) * Math.cos(azRad);
+    const z = r * Math.sin(elRad);
+    const profundidad = PROFUNDIDAD_RECEPTOR + z;
+    puntos.push({ x, y, profundidad });
+  }
+
+  return puntos;
+}
 
 function calcularPresencia(r) {
   return { rango: r };
