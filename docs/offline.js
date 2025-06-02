@@ -94,37 +94,39 @@ function mostrarFila(i) {
           backgroundColor: 'black',
           pointRadius: 8
         }
-      ],
-      options: {
-        animation: false,
-        scales: {
-          x: {
-            min: -RANGO_MAXIMO,
-            max: RANGO_MAXIMO,
-            title: { display: true, text: 'X (m)' }
-          },
-          y: {
-            min: -RANGO_MAXIMO,
-            max: RANGO_MAXIMO,
-            title: { display: true, text: 'Y (m)' }
+      ]
+    },
+    options: {  // ✅ AQUÍ está bien ubicado
+      animation: false,
+      scales: {
+        x: {
+          min: -RANGO_MAXIMO,
+          max: RANGO_MAXIMO,
+          title: { display: true, text: 'X (m)' }
+        },
+        y: {
+          min: -RANGO_MAXIMO,
+          max: RANGO_MAXIMO,
+          title: { display: true, text: 'Y (m)' }
+        }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const p = context.raw;
+              return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
+            }
           }
         },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const p = context.raw;
-                return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
-              }
-            }
-          },
-          legend: {
-            position: 'right',
-            labels: { boxWidth: 12 }
-          }
+        legend: {
+          position: 'right',
+          labels: { boxWidth: 12 }
         }
       }
+    }
   });
+
 
   // Actualizar leyenda y estado
   document.getElementById('infoFila').innerText = `Hora: ${fila.timestamp || 'desconocida'}`;
