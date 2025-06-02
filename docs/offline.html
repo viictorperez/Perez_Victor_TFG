@@ -13,6 +13,7 @@
       overflow: hidden;
       font-family: sans-serif;
     }
+
     #top-bar {
       position: absolute;
       top: 10px;
@@ -23,6 +24,7 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+
     #grafico {
       position: absolute;
       top: 0;
@@ -30,6 +32,7 @@
       width: 100vw;
       height: 100vh;
     }
+
     #leyenda-color {
       position: absolute;
       top: 50px;
@@ -39,6 +42,7 @@
       background: linear-gradient(to top, rgb(0,0,55), rgb(0,0,255));
       border: 1px solid #ccc;
     }
+
     #leyenda-labels {
       position: absolute;
       top: 50px;
@@ -48,6 +52,19 @@
       flex-direction: column;
       justify-content: space-between;
       font-size: 12px;
+    }
+
+    #leyenda-tipo {
+      position: absolute;
+      top: 260px;
+      right: 20px;
+      text-align: left;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 130px;
     }
   </style>
 </head>
@@ -67,6 +84,15 @@
   <div id="leyenda-labels">
     <span id="profundidad-max">max</span>
     <span id="profundidad-min">min</span>
+  </div>
+
+  <!-- Leyenda de tipo de puntos -->
+  <div id="leyenda-tipo">
+    <strong>Tipos de punto:</strong><br>
+    <span style="color: green;">●</span> Posición exacta<br>
+    <span style="color: blue;">●</span> Dirección estimada<br>
+    <span style="color: red;">●</span> Presencia<br>
+    <span style="color: black;">●</span> Receptor
   </div>
 
   <script src="offline.js"></script>
