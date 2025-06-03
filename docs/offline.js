@@ -118,7 +118,7 @@ function mostrarFila(i) {
               const p = context.raw;
         
               if (datasetLabel === 'Presencia (rango)') {
-                return `Rango: ${p.rango?.toFixed(1) ?? '?'}`;
+                return `Rango: ${p.rango.toFixed(1) ?? '?'}`;
               } else {
                 return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
               }
