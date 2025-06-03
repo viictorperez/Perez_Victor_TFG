@@ -173,8 +173,9 @@ function calcularPresencia(r) {
 
 function getColorForDepth(depth, min, max) {
   const ratio = (depth - min) / (max - min);
-  const blue = Math.round(255 - ratio * 200);
-  return `rgb(0,0,${blue})`;
+  const r = Math.min(Math.max(ratio, 0), 1);
+  const hue = (1 - r) * 240;
+  return `hsl(${hue}, 100%, 50%)`;
 }
 
 function isNumber(n) {
