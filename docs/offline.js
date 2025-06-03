@@ -2,8 +2,8 @@ let chart;
 let datos = [];
 let indiceActual = 0;
 
-const PROFUNDIDAD_RECEPTOR = 100;
-const RANGO_MAXIMO = 50; 
+const PROFUNDIDAD_RECEPTOR = 300;
+const RANGO_MAXIMO = 200; 
 
 document.getElementById('csvFile').addEventListener('change', function(evt) {
   Papa.parse(evt.target.files[0], {
