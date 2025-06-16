@@ -61,6 +61,31 @@ function mostrarFila(i) {
   if (chart) chart.destroy();
 
   const ctx = document.getElementById('grafico').getContext('2d');
+  Chart.register({
+  id: 'equalScale',
+  beforeUpdate(chart) {
+    const x = chart.scales.x;
+    const y = chart.scales.y;
+    const xRange = x.max - x.min;
+    const yRange = y.max - y.min;
+
+    const pixelRatioX = chart.chartArea.width / xRange;
+    const pixelRatioY = chart.chartArea.height / yRange;
+
+    if (pixelRatioX > pixelRatioY) {
+      const center = (x.max + x.min) / 2;
+      const newRange = chart.chartArea.width / pixelRatioY;
+      x.options.min = center - newRange / 2;
+      x.options.max = center + newRange / 2;
+    } else if (pixelRatioY > pixelRatioX) {
+      const center = (y.max + y.min) / 2;
+      const newRange = chart.chartArea.height / pixelRatioX;
+      y.options.min = center - newRange / 2;
+      y.options.max = center + newRange / 2;
+    }
+  }
+});
+
   chart = new Chart(ctx, {
     type: 'scatter',
     data: {
