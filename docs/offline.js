@@ -84,9 +84,12 @@ function mostrarFila(i) {
         },
         {
           label: 'Presencia (rango)',
-          data: puntosPresencia.map(p => ({ x: 0, y: 0, rango: p.rango })),
-          backgroundColor: 'red',
-          pointRadius: puntosPresencia.map(p => p.rango)
+          data: puntosPresencia.flatMap(p => calcularCircunferencia(p.rango)),
+          showLine: true,
+          borderColor: 'red',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          pointRadius: 0
         },
         {
           label: 'Receptor (0,0)',
@@ -133,7 +136,7 @@ function mostrarFila(i) {
               const p = context.raw;
 
               if (datasetLabel === 'Receptor (0,0)') return '';
-              if (datasetLabel === 'Presencia (rango)') return `Rango: ${p.rango?.toFixed(1) ?? '?'}`;
+              if (datasetLabel === 'Presencia (rango)') return `Rango: ${p.r ?? '?'}`;
               return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
             }
           }
@@ -187,6 +190,17 @@ function calcularDireccion(az, el, segmentos = 20) {
 
 function calcularPresencia(r) {
   return { rango: r };
+}
+
+function calcularCircunferencia(radio, segmentos = 100) {
+  const puntos = [];
+  for (let i = 0; i <= segmentos; i++) {
+    const angulo = (2 * Math.PI * i) / segmentos;
+    const x = radio * Math.cos(angulo);
+    const y = radio * Math.sin(angulo);
+    puntos.push({ x, y });
+  }
+  return puntos;
 }
 
 function getColorForDepth(depth, min, max) {
