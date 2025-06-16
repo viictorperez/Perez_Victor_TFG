@@ -116,12 +116,16 @@ function mostrarFila(i) {
             label: function(context) {
               const datasetLabel = context.dataset.label;
               const p = context.raw;
-        
-              if (datasetLabel === 'Presencia (rango)') {
-                return `Rango: ${p.rango.toFixed(1) ?? '?'}`;
-              } else {
-                return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
+            
+              if (datasetLabel === 'Receptor (0,0)') {
+                return ''; // No mostrar nada
               }
+            
+              if (datasetLabel === 'Presencia (rango)') {
+                return `Rango: ${p.rango?.toFixed(1) ?? '?'}`;
+              }
+            
+              return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
             }
           }
         },
