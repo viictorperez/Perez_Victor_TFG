@@ -3,14 +3,14 @@ let datos = [];
 let indiceActual = 0;
 
 const PROFUNDIDAD_RECEPTOR = 300;
-const RANGO_MAXIMO = 200; 
+const RANGO_MAXIMO = 200;
 
 document.getElementById('csvFile').addEventListener('change', function(evt) {
   Papa.parse(evt.target.files[0], {
     header: true,
     dynamicTyping: (field) => field !== 'timestamp',
     complete: function(resultados) {
-      datos = resultados.data.filter(f => f.id !== undefined); // ignora líneas vacías
+      datos = resultados.data.filter(f => f.id !== undefined);
       indiceActual = 0;
       mostrarFila(indiceActual);
     }
@@ -35,7 +35,6 @@ function mostrarFila(i) {
   const fila = datos[i];
   const puntosExactos = [];
   const puntosDireccion = [];
-  const puntosPresencia = [];
   let profundidades = [];
 
   const az = fila.azimut;
@@ -50,9 +49,6 @@ function mostrarFila(i) {
     const puntos = calcularDireccion(az, el);
     puntosDireccion.push(...puntos);
     profundidades.push(...puntos.map(p => p.profundidad));
-  } else if (isNumber(r)) {
-    const punto = calcularPresencia(r);
-    puntosPresencia.push(punto);
   }
 
   const minDepth = PROFUNDIDAD_RECEPTOR - RANGO_MAXIMO;
@@ -84,7 +80,7 @@ function mostrarFila(i) {
         },
         {
           label: 'Presencia (rango)',
-          data: puntosPresencia.flatMap(p => calcularCircunferencia(p.rango)),
+          data: isNumber(r) ? calcularCircunferencia(r) : [],
           showLine: true,
           borderColor: 'red',
           backgroundColor: 'transparent',
@@ -136,7 +132,7 @@ function mostrarFila(i) {
               const p = context.raw;
 
               if (datasetLabel === 'Receptor (0,0)') return '';
-              if (datasetLabel === 'Presencia (rango)') return `Rango: ${p.r ?? '?'}`;
+              if (datasetLabel === 'Presencia (rango)') return 'Circunferencia de rango';
               return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
             }
           }
@@ -149,7 +145,6 @@ function mostrarFila(i) {
     }
   });
 
-  // Actualizar leyenda y estado
   document.getElementById('infoFila').innerText = `Hora: ${fila.timestamp || 'desconocida'}`;
 
   if (profundidades.length > 0) {
@@ -186,10 +181,6 @@ function calcularDireccion(az, el, segmentos = 20) {
   }
 
   return puntos;
-}
-
-function calcularPresencia(r) {
-  return { rango: r };
 }
 
 function calcularCircunferencia(radio, segmentos = 100) {
