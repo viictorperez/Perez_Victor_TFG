@@ -2,38 +2,6 @@ let chart;
 let datos = [];
 let indiceActual = 0;
 
-Chart.register({
-  id: 'equalScale',
-  afterLayout(chart) {
-    const x = chart.scales.x;
-    const y = chart.scales.y;
-
-    if (!x || !y || !chart.chartArea) return;
-
-    const xRange = x.max - x.min;
-    const yRange = y.max - y.min;
-
-    const pixelRatioX = chart.chartArea.width / xRange;
-    const pixelRatioY = chart.chartArea.height / yRange;
-
-    if (Math.abs(pixelRatioX - pixelRatioY) < 1e-2) return;
-
-    if (pixelRatioX > pixelRatioY) {
-      const center = (x.max + x.min) / 2;
-      const newRange = chart.chartArea.width / pixelRatioY;
-      x.options.min = center - newRange / 2;
-      x.options.max = center + newRange / 2;
-    } else {
-      const center = (y.max + y.min) / 2;
-      const newRange = chart.chartArea.height / pixelRatioX;
-      y.options.min = center - newRange / 2;
-      y.options.max = center + newRange / 2;
-    }
-
-    chart.update('none');
-  }
-});
-
 const PROFUNDIDAD_RECEPTOR = 300;
 const RANGO_MAXIMO = 200; 
 
@@ -93,7 +61,6 @@ function mostrarFila(i) {
   if (chart) chart.destroy();
 
   const ctx = document.getElementById('grafico').getContext('2d');
-
   chart = new Chart(ctx, {
     type: 'scatter',
     data: {
@@ -129,22 +96,33 @@ function mostrarFila(i) {
         }
       ]
     },
-    options: {  
+    options: {
       animation: false,
+      responsive: true,
       maintainAspectRatio: false,
       layout: {
-        padding: 100
+        padding: 0
       },
       scales: {
         x: {
           min: -RANGO_MAXIMO,
           max: RANGO_MAXIMO,
-          title: { display: true, text: 'X (m)' }
+          title: { display: true, text: 'X (m)' },
+          ticks: { stepSize: 50 },
+          grid: {
+            drawTicks: true,
+            color: '#ccc'
+          }
         },
         y: {
           min: -RANGO_MAXIMO,
           max: RANGO_MAXIMO,
-          title: { display: true, text: 'Y (m)' }
+          title: { display: true, text: 'Y (m)' },
+          ticks: { stepSize: 50 },
+          grid: {
+            drawTicks: true,
+            color: '#ccc'
+          }
         }
       },
       plugins: {
@@ -153,15 +131,9 @@ function mostrarFila(i) {
             label: function(context) {
               const datasetLabel = context.dataset.label;
               const p = context.raw;
-            
-              if (datasetLabel === 'Receptor (0,0)') {
-                return ''; // No mostrar nada
-              }
-            
-              if (datasetLabel === 'Presencia (rango)') {
-                return `Rango: ${p.rango?.toFixed(1) ?? '?'}`;
-              }
-            
+
+              if (datasetLabel === 'Receptor (0,0)') return '';
+              if (datasetLabel === 'Presencia (rango)') return `Rango: ${p.rango?.toFixed(1) ?? '?'}`;
               return `(${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.profundidad?.toFixed(1) ?? '?'})`;
             }
           }
@@ -173,7 +145,6 @@ function mostrarFila(i) {
       }
     }
   });
-
 
   // Actualizar leyenda y estado
   document.getElementById('infoFila').innerText = `Hora: ${fila.timestamp || 'desconocida'}`;
