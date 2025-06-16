@@ -63,29 +63,36 @@ function mostrarFila(i) {
   const ctx = document.getElementById('grafico').getContext('2d');
   Chart.register({
   id: 'equalScale',
-  beforeUpdate(chart) {
+  afterLayout(chart) {
     const x = chart.scales.x;
     const y = chart.scales.y;
+
+    if (!x || !y || !chart.chartArea) return;
+
     const xRange = x.max - x.min;
     const yRange = y.max - y.min;
 
     const pixelRatioX = chart.chartArea.width / xRange;
     const pixelRatioY = chart.chartArea.height / yRange;
 
+    if (Math.abs(pixelRatioX - pixelRatioY) < 1e-2) return; // ya está cuadrado
+
     if (pixelRatioX > pixelRatioY) {
       const center = (x.max + x.min) / 2;
       const newRange = chart.chartArea.width / pixelRatioY;
       x.options.min = center - newRange / 2;
       x.options.max = center + newRange / 2;
-    } else if (pixelRatioY > pixelRatioX) {
+    } else {
       const center = (y.max + y.min) / 2;
       const newRange = chart.chartArea.height / pixelRatioX;
       y.options.min = center - newRange / 2;
       y.options.max = center + newRange / 2;
     }
+
+    chart.update('none'); // actualiza sin animación para evitar bucles infinitos
   }
 });
-
+  
   chart = new Chart(ctx, {
     type: 'scatter',
     data: {
