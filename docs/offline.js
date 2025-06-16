@@ -100,7 +100,7 @@ function mostrarFila(i) {
       animation: false,
       maintainAspectRatio: false,
       layout: {
-        padding: 40
+        padding: 100
       },
       scales: {
         x: {
