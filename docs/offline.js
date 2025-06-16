@@ -98,6 +98,7 @@ function mostrarFila(i) {
     },
     options: {  
       animation: false,
+      maintainAspectRatio: false,
       scales: {
         x: {
           min: -RANGO_MAXIMO,
