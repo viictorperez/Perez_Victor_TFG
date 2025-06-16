@@ -86,7 +86,7 @@ function mostrarFila(i) {
           label: 'Presencia (rango)',
           data: puntosPresencia.map(p => ({ x: 0, y: 0, rango: p.rango })),
           backgroundColor: 'red',
-          pointRadius: puntosPresencia.map(p => p.rango / 5)
+          pointRadius: puntosPresencia.map(p => p.rango)
         },
         {
           label: 'Receptor (0,0)',
