@@ -1,5 +1,3 @@
-// main.js
-
 const map = L.map('map').setView([41.38, 2.17], 13);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -7,7 +5,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let polyline = L.polyline([], { color: 'blue' }).addTo(map);
-let points = []; // Guardar el historial de puntos
+let points = []; 
 let circle = null;
 let lastTimestamp = null;
 
@@ -20,7 +18,7 @@ async function fetchLatestLocation() {
     const lon = data.longitude;
     const time = data.timestamp;
 
-    if (time === lastTimestamp) return; // Mismo timestamp, ignorar
+    if (time === lastTimestamp) return; 
     lastTimestamp = time;
 
     if (!isNaN(lat) && !isNaN(lon)) {
