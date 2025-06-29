@@ -49,6 +49,9 @@ function mostrarFila(i) {
     const puntos = calcularDireccion(az, el);
     puntosDireccion.push(...puntos);
     profundidades.push(...puntos.map(p => p.profundidad));
+  } else if (isNumber(r)) {
+    const puntos = calcularCircunferencia(r);
+    puntosPresencia.push(...puntos);  
   }
 
   const minDepth = PROFUNDIDAD_RECEPTOR - RANGO_MAXIMO;
@@ -80,7 +83,7 @@ function mostrarFila(i) {
         },
         {
           label: 'Presencia (rango)',
-          data: isNumber(r) ? calcularCircunferencia(r) : [],
+          data: puntosPresencia,
           showLine: true,
           borderColor: 'red',
           backgroundColor: 'transparent',
