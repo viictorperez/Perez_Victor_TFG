@@ -35,6 +35,7 @@ function mostrarFila(i) {
   const fila = datos[i];
   const puntosExactos = [];
   const puntosDireccion = [];
+  const puntosPresencia = [];
   let profundidades = [];
 
   const az = fila.azimut;
